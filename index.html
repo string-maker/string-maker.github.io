@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Maker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: beige;
+        }
+
+        header {
+            background: navy;
+            color: beige;
+            text-align: center;
+        }
+
+        h1 {
+            margin-block-end: 0;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .textarea-column {
+            flex: 1;
+            height: 90vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        textarea {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>String Maker</h1>
+        <input type="checkbox" id="compress" checked> compress
+    </header>
+    <div class="container">
+        <div class="textarea-column">
+            <textarea rows="20" id="input" onkeyup="output.value = stringMaker(input.value)"
+                placeholder="Paste a (template literal) String">`
+                :host {
+                --_color: var(--fl-heart-color, #F8C8DC);
+                --_size: var(--fl-heart-size, 3vw);
+                --_sway: var(--fl-sway, 5);
+                --_iteration: var(--fl-iteration, infinite);
+                --_duration: var(--fl-duration, 10s);
+                --_ease: var(--fl-ease, ease-in-out);
+                }
+                
+                .for-love-hearts {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                overflow: hidden;
+                }
+                
+                @keyframes goToTopHeart {
+                0% {
+                opacity: 0;
+                translate: 0 100vh;
+                scale: .2;
+                margin-left: calc(var(--_sway) * 1px);
+                }
+                
+                10% {
+                opacity: 1;
+                }
+                
+                18% {
+                scale: 1;
+                }
+                
+                10%,
+                30%,
+                50%,
+                70%,
+                90% {
+                margin-left: calc(var(--_sway) * -1px);
+                }
+                
+                20%,
+                40%,
+                60%,
+                80%,
+                100% {
+                margin-left: calc(var(--_sway) * 1px);
+                }
+                
+                80% {
+                opacity: 1;
+                scale: 1;
+                }
+                
+                100% {
+                translate: 0 -100%;
+                opacity: 0;
+                scale: 0;
+                }
+                }
+                
+                @keyframes goToTopHeartContained {
+                0% {
+                opacity: 0;
+                top: 100%;
+                scale: .2;
+                margin-left: calc(var(--_sway) * 1px);
+                }
+                
+                10% {
+                opacity: 1;
+                }
+                
+                18% {
+                scale: 1;
+                }
+                
+                10%,
+                30%,
+                50%,
+                70%,
+                90% {
+                margin-left: calc(var(--_sway) * -1px);
+                }
+                
+                20%,
+                40%,
+                60%,
+                80%,
+                100% {
+                margin-left: calc(var(--_sway) * 1px);
+                }
+                
+                80% {
+                opacity: 1;
+                scale: 1;
+                }
+                
+                100% {
+                top: 0;
+                opacity: 0;
+                scale: 0;
+                }
+                }
+                
+                .heart {
+                position: absolute;
+                top: 0;
+                margin: auto;
+                left: var(--left, 0);
+                height: var(--_size);
+                width: var(--_size);
+                background-color: var(--_color);
+                opacity: 0;
+                rotate: -45deg;
+                pointer-events: none;
+                animation: goToTopHeart var(--_duration) var(--_iteration) var(--_ease);
+                animation-delay: calc(var(--delay) * .1s);
+                }
+                
+                .heart::after,
+                .heart::before {
+                background-color: var(--_color);
+                content: "";
+                border-radius: 50%;
+                position: absolute;
+                width: var(--_size);
+                height: var(--_size);
+                top: 0px;
+                left: calc(var(--_size) / 2);
+                }
+                
+                .heart::before {
+                top: calc(var(--_size) / -2);
+                left: 0;
+                }
+                
+                :host([contained]) {
+                    position: absolute;
+                }
+                
+                @media (prefers-reduced-motion) {
+                    .heart,
+                    .for-love-hearts {
+                        display: none;
+                        animation: none;
+                    }
+                }
+                `</textarea>
+        </div>
+        <div class="textarea-column">
+            <textarea id="output" placeholder="Copy output from here"
+                onkeyup="input.value = templateLiteralToCSS(output.value)"></textarea>
+        </div>
+    </div>
+    <script>
+        function isQuote(s) {
+            return s.startsWith('`') || s.startsWith("'") || s.startsWith('"');
+        }
+        function removeCSSWhitespace(cssString) {
+            // Replace multiple spaces with a single space and remove spaces around {, }, :, ;, and +
+            return cssString
+                .replace(/\s*{\s*/g, '{')
+                .replace(/\s*}\s*/g, '}')
+                .replace(/\s*:\s*/g, ':')
+                .replace(/\s*;\s*/g, ';')
+                .replace(/var\(([^)]+)\)/g, (match) => match.replace(/,\s+/g, ','))
+                //.replace(/\s*\+\s*/g, '+')
+                .replace(/\s+/g, ' ')
+                .trim(); // Trim leading and trailing whitespace
+        }
+        function stringMaker(input) {
+            let quote = "`";
+            let lines = input.trim();
+            if (isQuote(lines[0])) {
+                quote = lines[0];
+                console.warn(quote);
+                lines = lines.substring(1);
+            }
+            if (isQuote(lines[lines.length - 1])) lines = lines.substring(0, lines.length - 1);
+
+            lines = lines.trim()
+                .split('\n')
+                .filter(Boolean)
+                .map(line => {
+                    line = line.trim();
+
+                    linequote = quote;
+                    if (line.includes("${")) linequote = "`";
+                    else if (line.includes('"')) linequote = "'";
+                    else if (line.includes("'")) linequote = '"';
+
+                    return `${linequote}${line}${linequote}`;
+                })
+                .reduce((acc, line, lines) => {
+                    if (line) { // Ignore empty lines
+                        let prevline = acc[acc.length - 1];
+                        if (line.includes(':') || line.includes(';')) {
+                            acc.push(line); // Line with a colon is pushed as a new entry
+                        } else {
+                            const prevIsDefinition = prevline.includes(':');
+                            const prevIsEndProperty = prevline.includes(';');
+                            const prevIsEndBlock = prevline[prevline.length - 1] === "}";
+                            if (prevIsDefinition || prevIsEndProperty || prevIsEndBlock) {
+                                acc.push(line); // Line with a colon is pushed as a new entry
+                            } else {
+                                console.log(prevline, line);
+                                line = line.substring(1, line.length - 1).trim();
+                                acc[acc.length - 1] += ' ' + line; // Concatenate lines without a colon to the previous line
+                            }
+                        }
+                    }
+                    return acc;
+                }, [])
+                .map(line => line.replace(/;$/, '')) // Remove trailing semicolons
+                .map(line => compress.checked ? removeCSSWhitespace(line) : line) //
+                .join(' +\n');
+            return lines;
+        }
+
+        function templateLiteralToCSS(templateStr) {
+            // Remove backticks and plus signs
+            let cssStr = templateStr.replace(/`|\+/g, "").trim();
+            // Fix spacing issues around hyphens in property names
+            cssStr = cssStr.replace(/background - size/g, "background-size");
+            return cssStr;
+        }
+
+
+
+
+        document.addEventListener('click', function (event) {
+            if (event.target.matches('button')) {
+                output.value = stringMaker(input.value);
+            }
+        });
+        output.value = stringMaker(input.value);
+    </script>
+</body>
+
+</html>
